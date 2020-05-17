@@ -18,49 +18,122 @@
       background-color: cornflowerblue;
       position: absolute;
     }
+    #dot {
+      width: 10px;
+      height: 10px;
+      background-color: red;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+    }
   </style>
 </head>
 <body>
 
   <div id="box">
     <div id="snake"></div>
+    <div id="dot" hidden></div>
   </div>
 
   <script>
-    let box = document.getElementById('box')
-    let snake = document.getElementById('snake')
+    const box = document.getElementById('box')
+    const snake = document.getElementById('snake')
+    const dot = document.getElementById('dot')
     snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
     snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
 
     let direction = 'right';
 
-      // setInterval(() => {
-      //   console.log('hi')
-      //   snake.style.left = parseInt(snake.style.left) - snake.clientWidth + 'px'
-      // }, 100);
+    let timerId = setInterval(() => {
+      switch(direction) {
+        case 'right': {
+          if (parseInt(snake.style.left) >= (box.clientWidth - snake.clientWidth) ) { haltGame(); break }
+          snake.style.left = parseInt(snake.style.left) + snake.clientWidth + 'px'
+          break
+        }
+        case 'left': {
+          if (parseInt(snake.style.left) <= 0 ) { haltGame(); break }
+          snake.style.left = parseInt(snake.style.left) - snake.clientWidth + 'px'
+          break
+        }
+        case 'up': {
+          if (parseInt(snake.style.top) <= 0) { haltGame(); break }
+          snake.style.top = parseInt(snake.style.top) - snake.clientHeight + 'px'
+          break
+        }
+        case 'down': {
+          if (parseInt(snake.style.top) >= (box.clientHeight - snake.clientHeight)) { haltGame(); break }
+          snake.style.top = parseInt(snake.style.top) + snake.clientWidth + 'px'
+          break
+        }
+      }
+    }, 500)
+
+    //setTimeout(() => { clearInterval(timerId); alert('stop'); }, 5000);
+
+    const haltGame = () => {
+        clearInterval(timerId)
+        alert('Проигрыш')
+    }
+
+    const dotCoords = () => {
+      return [randomInteger(0, box.clientWidth / 10 - 1), 
+              randomInteger(0, box.clientHeight / 10 - 1)]
+    }
+
+    const showDot = () => {
+      console.log('hi')
+      let [X, Y] = dotCoords()
+      dot.style.left = X*10 + 'px'
+      dot.style.top = Y*10 + 'px'
+      dot.hidden = false
+    }
+
+    showDot()
+
+    function randomInteger(min, max) {
+      let rand = min + Math.random() * (max + 1 - min);
+      return Math.floor(rand);
+    }
 
     document.addEventListener('keydown', (e) => {
       switch (e.code) {
         case 'ArrowRight': {
-          if (parseInt(snake.style.left) >= (box.clientWidth - snake.clientWidth) ) { break }
-          snake.style.left = parseInt(snake.style.left) + snake.clientWidth + 'px'
+          direction = 'right'
           break
         }
         case 'ArrowLeft': {
-          if (parseInt(snake.style.left) <= 0 ) { break }
-          snake.style.left = parseInt(snake.style.left) - snake.clientWidth + 'px'
+          direction = 'left'
           break
         }
         case 'ArrowUp': {
-          if (parseInt(snake.style.top) <= 0) { break }
-          snake.style.top = parseInt(snake.style.top) - snake.clientHeight + 'px'
+          direction = 'up'
           break
         }
         case 'ArrowDown': {
-          if (parseInt(snake.style.top) >= (box.clientHeight - snake.clientHeight)) { break }
-          snake.style.top = parseInt(snake.style.top) + snake.clientWidth + 'px'
+          direction = 'down'
           break
         }
+        // case 'ArrowRight': {
+        //   if (parseInt(snake.style.left) >= (box.clientWidth - snake.clientWidth) ) { break }
+        //   snake.style.left = parseInt(snake.style.left) + snake.clientWidth + 'px'
+        //   break
+        // }
+        // case 'ArrowLeft': {
+        //   if (parseInt(snake.style.left) <= 0 ) { break }
+        //   snake.style.left = parseInt(snake.style.left) - snake.clientWidth + 'px'
+        //   break
+        // }
+        // case 'ArrowUp': {
+        //   if (parseInt(snake.style.top) <= 0) { break }
+        //   snake.style.top = parseInt(snake.style.top) - snake.clientHeight + 'px'
+        //   break
+        // }
+        // case 'ArrowDown': {
+        //   if (parseInt(snake.style.top) >= (box.clientHeight - snake.clientHeight)) { break }
+        //   snake.style.top = parseInt(snake.style.top) + snake.clientWidth + 'px'
+        //   break
+        // }
       }
     })
   </script>
