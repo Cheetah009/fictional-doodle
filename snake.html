@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <style>
+    #box {
+      width: 300px;
+      height: 300px;
+      border: 5px solid black;
+      background-color: beige;
+      margin: auto;
+      position: relative;
+    }
+    #snake {
+      width: 10px;
+      height: 10px;
+      background-color: cornflowerblue;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="box">
+    <div id="snake"></div>
+  </div>
+
+  <script>
+    let box = document.getElementById('box')
+    let snake = document.getElementById('snake')
+    snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
+    snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
+
+    let direction = 'right';
+
+      // setInterval(() => {
+      //   console.log('hi')
+      //   snake.style.left = parseInt(snake.style.left) - snake.clientWidth + 'px'
+      // }, 100);
+
+    document.addEventListener('keydown', (e) => {
+      switch (e.code) {
+        case 'ArrowRight': {
+          if (parseInt(snake.style.left) >= (box.clientWidth - snake.clientWidth) ) { break }
+          snake.style.left = parseInt(snake.style.left) + snake.clientWidth + 'px'
+          break
+        }
+        case 'ArrowLeft': {
+          if (parseInt(snake.style.left) <= 0 ) { break }
+          snake.style.left = parseInt(snake.style.left) - snake.clientWidth + 'px'
+          break
+        }
+        case 'ArrowUp': {
+          if (parseInt(snake.style.top) <= 0) { break }
+          snake.style.top = parseInt(snake.style.top) - snake.clientHeight + 'px'
+          break
+        }
+        case 'ArrowDown': {
+          if (parseInt(snake.style.top) >= (box.clientHeight - snake.clientHeight)) { break }
+          snake.style.top = parseInt(snake.style.top) + snake.clientWidth + 'px'
+          break
+        }
+      }
+    })
+  </script>
+
+</body>
