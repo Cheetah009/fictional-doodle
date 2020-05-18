@@ -26,25 +26,41 @@
       top: 0px;
       left: 0px;
     }
+    #bodypart {
+      width: 10px;
+      height: 10px;
+      background-color: lightskyblue;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+    }
   </style>
 </head>
 <body>
 
   <div id="box">
     <div id="snake"></div>
-    <div id="dot" hidden></div>
+    <div id="dot"></div>
+    <div id="bodypart" hidden></div>
   </div>
 
   <script>
+    //TODO: fix bug with direction (if you press 'left' then 'up' then 'right' within an interval gap it will change direction to opposite right away)
     const box = document.getElementById('box')
     const snake = document.getElementById('snake')
     const dot = document.getElementById('dot')
+    let bodyparts = []
+    bodyparts.push(document.getElementById('bodypart'))
+    
     snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
     snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
 
+
+    let speed = 300 //amount of ms between movements
     let direction = 'right';
 
     let timerId = setInterval(() => {
+      let pastXY = [snake.style.left, snake.style.top]
       switch(direction) {
         case 'right': {
           if (parseInt(snake.style.left) >= (box.clientWidth - snake.clientWidth) ) { haltGame(); break }
@@ -66,10 +82,18 @@
           snake.style.top = parseInt(snake.style.top) + snake.clientWidth + 'px'
           break
         }
-      }
-    }, 500)
+      }   
 
-    //setTimeout(() => { clearInterval(timerId); alert('stop'); }, 5000);
+      [bodyparts[0].style.left, bodyparts[0].style.top] = pastXY
+
+      if (snake.style.left === dot.style.left && snake.style.top === dot.style.top) {
+        placeDot()
+        if (bodyparts[0].hidden) {
+          bodyparts[0].hidden = false
+          return
+        }
+      }
+    }, speed)
 
     const haltGame = () => {
         clearInterval(timerId)
@@ -81,15 +105,17 @@
               randomInteger(0, box.clientHeight / 10 - 1)]
     }
 
-    const showDot = () => {
-      console.log('hi')
+    const placeDot = () => {
       let [X, Y] = dotCoords()
+      if (X*10 === parseInt(snake.style.left) && Y*10 === parseInt(snake.style.top)) {
+        placeDot()
+        return
+      }
       dot.style.left = X*10 + 'px'
       dot.style.top = Y*10 + 'px'
-      dot.hidden = false
     }
 
-    showDot()
+    placeDot()
 
     function randomInteger(min, max) {
       let rand = min + Math.random() * (max + 1 - min);
@@ -97,43 +123,28 @@
     }
 
     document.addEventListener('keydown', (e) => {
+      let pastDirection = direction
       switch (e.code) {
         case 'ArrowRight': {
+          if (pastDirection === 'left') {break}
           direction = 'right'
           break
         }
         case 'ArrowLeft': {
+          if (pastDirection === 'right') {break}
           direction = 'left'
           break
         }
         case 'ArrowUp': {
+          if (pastDirection === 'down') {break}
           direction = 'up'
           break
         }
         case 'ArrowDown': {
+          if (pastDirection === 'up') {break}
           direction = 'down'
           break
         }
-        // case 'ArrowRight': {
-        //   if (parseInt(snake.style.left) >= (box.clientWidth - snake.clientWidth) ) { break }
-        //   snake.style.left = parseInt(snake.style.left) + snake.clientWidth + 'px'
-        //   break
-        // }
-        // case 'ArrowLeft': {
-        //   if (parseInt(snake.style.left) <= 0 ) { break }
-        //   snake.style.left = parseInt(snake.style.left) - snake.clientWidth + 'px'
-        //   break
-        // }
-        // case 'ArrowUp': {
-        //   if (parseInt(snake.style.top) <= 0) { break }
-        //   snake.style.top = parseInt(snake.style.top) - snake.clientHeight + 'px'
-        //   break
-        // }
-        // case 'ArrowDown': {
-        //   if (parseInt(snake.style.top) >= (box.clientHeight - snake.clientHeight)) { break }
-        //   snake.style.top = parseInt(snake.style.top) + snake.clientWidth + 'px'
-        //   break
-        // }
       }
     })
   </script>
