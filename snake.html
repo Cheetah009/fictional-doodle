@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="utf-8">
+  <title>Змейка</title>
   <style>
     #box {
       width: 300px;
@@ -34,32 +35,58 @@
       top: 0px;
       left: 0px;
     }
+    #score {
+      width: 300px;
+      border-top: 5px solid black;
+      border-left: 5px solid black;
+      border-right: 5px solid black;
+      background-color: lightgreen;
+      margin: auto;
+      position: relative;
+      text-align: center;
+    }
+    #restartButton {
+      width: 310px;
+      margin-top: 5px;
+      position: relative;
+      left: 50%;
+      transform: translate(-50%, 0);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-
+  <div id="score">0</div>
   <div id="box">
     <div id="snake"></div>
     <div id="dot"></div>
     <div id="bodypart" hidden></div>
   </div>
+  <button id="restartButton">Перезапустить игру</button>
 
   <script>
     //TODO: fix bug with direction (if you press 'left' then 'up' then 'right' within an interval gap it will change direction to opposite right away)
     const box = document.getElementById('box')
     const snake = document.getElementById('snake')
     const dot = document.getElementById('dot')
+    const score = document.getElementById('score')
+    const restartButton = document.getElementById('restartButton')
     let bodyparts = []
     bodyparts.push(document.getElementById('bodypart'))
+
+    let halted = false
     
     snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
     snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
 
 
-    let speed = 300 //amount of ms between movements
+    let speed = 100 //amount of ms between movements
     let direction = 'right';
 
-    let timerId = setInterval(() => {
+    let timerId = setInterval(movement, speed)
+
+    function movement() {
+      // () => {
       let pastXY = [snake.style.left, snake.style.top]
       switch(direction) {
         case 'right': {
@@ -83,21 +110,49 @@
           break
         }
       }   
+      if (bodyparts.length === 1) {
+        [bodyparts[0].style.left, bodyparts[0].style.top] = pastXY
+      } else {
+        for (let i = 0; i < bodyparts.length; i++){
+          let len = bodyparts.length - 1;
+          if (len - i === 0) {
+            bodyparts[0].style.left = pastXY[0]
+            bodyparts[0].style.top = pastXY[1]
+          } else {
+            bodyparts[len - i].style.left = bodyparts[len - i - 1].style.left
+            bodyparts[len - i].style.top = bodyparts[len - i - 1].style.top
+          }
 
-      [bodyparts[0].style.left, bodyparts[0].style.top] = pastXY
+          if (snake.style.left === bodyparts[len - i].style.left && snake.style.top === bodyparts[len - i].style.top) {
+            haltGame()
+            break
+          }
+        }
+      }
+
+      
 
       if (snake.style.left === dot.style.left && snake.style.top === dot.style.top) {
         placeDot()
+        score.innerHTML = parseInt(score.innerHTML) + 100; 
         if (bodyparts[0].hidden) {
           bodyparts[0].hidden = false
           return
         }
+        let newBodypart = bodyparts[0].cloneNode(true);
+        bodyparts[bodyparts.length-1].after(newBodypart)
+        bodyparts.push(newBodypart)
+
       }
-    }, speed)
+   // }
+    }
 
     const haltGame = () => {
-        clearInterval(timerId)
-        alert('Проигрыш')
+        if(!halted) {
+          halted = true
+          clearInterval(timerId)
+          alert('Игра окончена! Вы набрали ' + score.innerHTML + ' баллов!')
+        }  
     }
 
     const dotCoords = () => {
@@ -111,6 +166,13 @@
         placeDot()
         return
       }
+      for (let part of bodyparts) {
+        if (X*10 === parseInt(part.style.left) && Y*10 === parseInt(part.style.top)) {
+        placeDot()
+        return
+      }
+      }
+      
       dot.style.left = X*10 + 'px'
       dot.style.top = Y*10 + 'px'
     }
@@ -147,6 +209,25 @@
         }
       }
     })
+
+    restartButton.onclick = () => {
+      score.innerHTML = 0
+      snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
+      snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
+      timerId = setInterval(movement, speed)
+      placeDot()
+      halted = false
+      let bodypartsToDelete = document.querySelectorAll('#bodypart')
+      for (let part of bodypartsToDelete) {
+        part.remove()
+      }
+      bodyparts = []
+      let bodypart = document.createElement('div')
+      bodypart.id = 'bodypart'
+      bodypart.hidden = true
+      box.append(bodypart)
+      bodyparts.push(bodypart)
+    }
   </script>
 
 </body>
