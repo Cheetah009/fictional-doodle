@@ -6,37 +6,37 @@
   <title>Змейка</title>
   <style>
     #box {
-      width: 300px;
-      height: 300px;
+      width: 400px;
+      height: 400px;
       border: 5px solid black;
       background-color: beige;
       margin: auto;
       position: relative;
     }
     #snake {
-      width: 10px;
-      height: 10px;
+      width: 20px;
+      height: 20px;
       background-color: cornflowerblue;
       position: absolute;
     }
     #dot {
-      width: 10px;
-      height: 10px;
+      width: 20px;
+      height: 20px;
       background-color: red;
       position: absolute;
       top: 0px;
       left: 0px;
     }
     #bodypart {
-      width: 10px;
-      height: 10px;
+      width: 20px;
+      height: 20px;
       background-color: lightskyblue;
       position: absolute;
       top: 0px;
       left: 0px;
     }
     #score {
-      width: 300px;
+      width: 400px;
       border-top: 5px solid black;
       border-left: 5px solid black;
       border-right: 5px solid black;
@@ -46,7 +46,7 @@
       text-align: center;
     }
     #restartButton {
-      width: 310px;
+      width: 410px;
       margin-top: 5px;
       position: relative;
       left: 50%;
@@ -71,6 +71,7 @@
     const dot = document.getElementById('dot')
     const score = document.getElementById('score')
     const restartButton = document.getElementById('restartButton')
+
     let bodyparts = []
     bodyparts.push(document.getElementById('bodypart'))
 
@@ -79,15 +80,20 @@
     snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
     snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
 
-
     let speed = 100 //amount of ms between movements
-    let direction = 'right';
+    let direction = 'right'
+    let rendered = true
+    let previousDirection = direction
 
     let timerId = setInterval(movement, speed)
 
+    placeDot()
+
     function movement() {
-      // () => {
       let pastXY = [snake.style.left, snake.style.top]
+
+      rendered = true
+
       switch(direction) {
         case 'right': {
           if (parseInt(snake.style.left) >= (box.clientWidth - snake.clientWidth) ) { haltGame(); break }
@@ -110,6 +116,7 @@
           break
         }
       }   
+
       if (bodyparts.length === 1) {
         [bodyparts[0].style.left, bodyparts[0].style.top] = pastXY
       } else {
@@ -130,8 +137,6 @@
         }
       }
 
-      
-
       if (snake.style.left === dot.style.left && snake.style.top === dot.style.top) {
         placeDot()
         score.innerHTML = parseInt(score.innerHTML) + 100; 
@@ -142,9 +147,9 @@
         let newBodypart = bodyparts[0].cloneNode(true);
         bodyparts[bodyparts.length-1].after(newBodypart)
         bodyparts.push(newBodypart)
-
       }
-   // }
+
+      previousDirection = direction
     }
 
     const haltGame = () => {
@@ -155,29 +160,34 @@
         }  
     }
 
-    const dotCoords = () => {
-      return [randomInteger(0, box.clientWidth / 10 - 1), 
-              randomInteger(0, box.clientHeight / 10 - 1)]
+    function dotCoords() {
+      return [randomInteger(0, box.clientWidth / snake.clientWidth - 1), 
+              randomInteger(0, box.clientHeight / snake.clientHeight - 1)]
     }
 
-    const placeDot = () => {
+    function placeDot() {
+      if (bodyparts.length + 1 >= box.clientWidth / snake.clientWidth * box.clientHeight / snake.clientHeight) {
+        haltGame();
+        alert('Вы прошли игру!')
+        return;
+      }
       let [X, Y] = dotCoords()
-      if (X*10 === parseInt(snake.style.left) && Y*10 === parseInt(snake.style.top)) {
+      if (X*snake.clientWidth === parseInt(snake.style.left) && Y*snake.clientHeight === parseInt(snake.style.top)) {
         placeDot()
         return
       }
       for (let part of bodyparts) {
-        if (X*10 === parseInt(part.style.left) && Y*10 === parseInt(part.style.top)) {
+        if (X*snake.clientWidth === parseInt(part.style.left) && Y*snake.clientHeight === parseInt(part.style.top)) {
         placeDot()
         return
       }
       }
       
-      dot.style.left = X*10 + 'px'
-      dot.style.top = Y*10 + 'px'
+      dot.style.left = X*snake.clientWidth + 'px'
+      dot.style.top = Y*snake.clientHeight + 'px'
     }
 
-    placeDot()
+
 
     function randomInteger(min, max) {
       let rand = min + Math.random() * (max + 1 - min);
@@ -185,7 +195,10 @@
     }
 
     document.addEventListener('keydown', (e) => {
+      if (!rendered) {return}
+
       let pastDirection = direction
+
       switch (e.code) {
         case 'ArrowRight': {
           if (pastDirection === 'left') {break}
@@ -208,20 +221,30 @@
           break
         }
       }
+
+      rendered = false
     })
 
     restartButton.onclick = () => {
+      clearInterval(timerId)
+
       score.innerHTML = 0
       snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
       snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
-      timerId = setInterval(movement, speed)
-      placeDot()
+      direction = 'right'
       halted = false
+
+      timerId = setInterval(movement, speed)
+
+      placeDot()
+      
       let bodypartsToDelete = document.querySelectorAll('#bodypart')
       for (let part of bodypartsToDelete) {
         part.remove()
       }
+
       bodyparts = []
+      
       let bodypart = document.createElement('div')
       bodypart.id = 'bodypart'
       bodypart.hidden = true
