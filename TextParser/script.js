@@ -1,89 +1,83 @@
 const fs = require('fs')
 
-let fileContent = fs.readFileSync("messages.html", "utf8")
+const fileContent = fs.readFileSync("messages.html", "utf8") //input
 
-let str = fileContent
+const listOfDays = fileContent.matchAll(/\#ИтогиДня.+?<\/div>/gs)
 
-console.log(str.length)
+fs.writeFileSync('results.txt', '') //output file
 
-let newstr = str.matchAll(/\#ИтогиДня.+?<\/div>/gs)
+const listOfAllDeedsFile = fs.readFileSync("analyzer_output.txt", "utf8") //from analyzer.js
 
-//console.log(Array.from(newstr).length)
-// /<div class="text">\r\n<a href="" onclick="return ShowHashtag(.*?)<\/div>/gs
+const listOfAllDeeds = listOfAllDeedsFile.split('\n')
 
-//.+? <\/div>
+let resultMapElem = new Map() //elem of the result array
 
-// for (let elem of newstr) {
-//   console.log(elem[0])
-// }
+resultMapElem.set('День', 0)
+resultMapElem.set('Чтение', 0)
 
-fs.writeFileSync('results.txt', '')
+for (let elem of listOfAllDeeds) {
+  resultMapElem.set(elem, 0)
+}
 
-let i = 0;
-for (let deedElem of newstr) {
-  console.log(i)
-  i++
-  let beforenewerstr = deedElem[0].replace(/<[^>]*>/g, "")
-  let newerstr = beforenewerstr.replace(/\d\./g, '')
+resultMapElem.set('Настроение', '')
 
-  let Itogs = newerstr.match(/#ИтогиДня (\d+\b)/) || []
+let resultArray = []
 
-  let reading = newerstr.match(/Чтение. (?:(\d+\b) ча[c|сов|са])?\s?(?:(\d+\b) минут)?/) || []
-  //console.log(reading[2])
+for (let dayRaw of listOfDays) {
+  let MapElem = new Map(resultMapElem) //copy of elem with all keys
+
+  const strWithoutHtmlTags = dayRaw[0].replace(/<[^>]*>/g, "")
+  const dayinfo = strWithoutHtmlTags.replace(/\d\./g, '')
+
+  const dayNumber = dayinfo.match(/#ИтогиДня (\d+\b)/) || [0,0]
+
+  fs.appendFileSync('results.txt',dayNumber[1]+'\n')
+  MapElem.set('День', dayNumber[1])
+
+  const reading = dayinfo.match(/Чтение. (?:(\d+\b) ча[c|сов|са])?\s?(?:(\d+\b) минут)?/) || []
+
   let [readH, readM] = [reading[1], reading[2]]
   if (readH === undefined) {readH = 0}
   if (readM === undefined) {readM = 0}
 
-  let elems = newerstr.matchAll(/- (?<deed>.+?): (?:(?<hours>\d+\b) ча[c|сов|са])?\s?(?:(?<mins>\d+\b) минут)?/g) || []
+  const readSum = +readH * 60+ +readM
 
-  fs.appendFileSync('results.txt',Itogs[1]+'\n')
-  fs.appendFileSync('results.txt',`Чтение\t${+readH * 60+ +readM}\n`);
+  fs.appendFileSync('results.txt',`Чтение\t${readSum}\n`);
+  MapElem.set('Чтение', readSum)
 
-  for(let elem of elems) {
+  const allDeeds = dayinfo.matchAll(/- (?<deed>.+?): (?:(?<hours>\d+\b) ча[c|сов|са])?\s?(?:(?<mins>\d+\b) минут)?/g) || []
+
+  for(let elem of allDeeds) {
     let {deed, hours, mins} = elem.groups;
 
     if (hours === undefined) {hours = 0}
     if (mins === undefined) {mins = 0}
 
-    fs.appendFileSync('results.txt',`${deed}\t${ +hours * 60+ +mins}\n`);
+    const sumDeed = +hours * 60+ +mins
+
+    fs.appendFileSync('results.txt',`${deed}\t${sumDeed}\n`)
+    MapElem.set(`${deed}`, sumDeed)
   }
 
-  //if (i === 3) break
+  const mood = dayinfo.match(/Настроение. (.+) Доп/) || [0,'']
+
+  fs.appendFileSync('results.txt',`Настроение\t${mood[1]}\n`);
+  MapElem.set('Настроение', mood[1])
+  
+  resultArray.push(MapElem)
 }
 
+fs.writeFileSync('resultsForExcel.txt', '')
 
-//let newerstr = newstr[0].replace(/<[^>]*>/g, "")
+for (let deed of resultArray[0].keys()){ //Head of the Table
+  fs.appendFileSync('resultsForExcel.txt',`${deed}\t`);
+}
 
-///#ИтогиДня.*<\/div>/s 
+fs.appendFileSync('resultsForExcel.txt',`\n`);
 
-// let Itogs = newerstr.match(/#ИтогиДня (\d+\b)/)
-// let elems = newerstr.matchAll(/- (?<deed>.+?): (?:(?<hours>\d+\b) ча[c|сов|са])?\s?(?:(?<mins>\d+\b) минут)?/g)
-
-// // /- (?<deed>.+)?: (?:(?<hours>\d+\b) ча[c|сов|са])?\s?(?:(?<mins>\d+\b) минут)?/g
-// // /- (.+?): (\d+\b ча[c|сов|са])?\s?(\d+\b минут)?/g
-
-// //- (.+?\b):   (\d+\b минут)?    
-
-// //elems = Array.from(elems)
-
-// // console.log(newerstr)
-// fs.appendFileSync('results.txt',Itogs[1]+'\n')
-
-// for(let elem of elems) {
-//   let {deed, hours, mins} = elem.groups;
-
-//   if (hours === undefined) {hours = 0}
-//   if (mins === undefined) {mins = 0}
-
-//   fs.appendFileSync('results.txt',`${deed}\t${hours}\t${mins}\n`);
-//   // первый вывод: 30.10.2019
-//   // второй: 01.01.2020
-// }
-
-// //console.log(elems)
-
-// // let str = "Любо, братцы, любо!";
-
-// // console.log( str.match(/любо/gi) ); // Любо,любо (массив из 2х подстрок-совпадений)
-
-// //fs.writeFileSync('results.txt',)
+for (let day of resultArray){
+  for(let value of day.values()){
+    fs.appendFileSync('resultsForExcel.txt',`${value}\t`);
+  }
+  fs.appendFileSync('resultsForExcel.txt',`\n`);
+}
