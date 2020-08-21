@@ -1,1 +1,1 @@
-All jucy stuff is in App.js and in its dependencies.
+All jucy stuff is in App.js and in dependencies within it.
