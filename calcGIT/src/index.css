@@ -1,0 +1,7 @@
+.big-text {
+  font-size: 1.5rem;
+}
+
+.hoverable:hover {
+  background: #bdc3c7;
+}

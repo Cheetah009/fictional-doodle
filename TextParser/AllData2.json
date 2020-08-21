@@ -1,0 +1,28 @@
+[
+  {
+    "day": 0,
+    "reading": 0,
+    "photoshop": 60,
+    "engilsh": 45,
+    "japanese": 25,
+    "programming": 60,
+    "video": 50,
+    "drawing": 25
+  },
+  {
+    "day": 2,
+    "reading": 0,
+    "photoshop": 30,
+    "engilsh": 45,
+    "japanese": 75,
+    "programming": 60,
+    "video": 20,
+    "drawing": 60
+  },
+  {
+    "ALLLO": 42
+  },
+  {
+    "ALLLO": 42
+  }
+]
