@@ -49,9 +49,32 @@
       width: 410px;
       margin-top: 5px;
       position: relative;
+      background-color: white;
+      line-height: 2rem;
+      font-size: 1.3rem;
       left: 50%;
       transform: translate(-50%, 0);
       text-align: center;
+    }
+    #restartButton:active {
+      background-color: orange;
+    }
+
+    #touch_panel {
+      margin: 1rem auto;
+      font-size: 3rem;
+    }
+
+    #touch_panel td {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    #touch_panel .arrow {
+      cursor: pointer;
+    }
+    #touch_panel .arrow:hover {
+      color: gray;
     }
   </style>
 </head>
@@ -63,6 +86,24 @@
     <div id="bodypart" hidden></div>
   </div>
   <button id="restartButton">Перезапустить игру</button>
+
+  <table id="touch_panel">
+    <tr>
+      <td></td>
+      <td class="arrow">▲</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td class="arrow">◄</td>
+      <td></td>
+      <td class="arrow">►</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td class="arrow">▼</td>
+      <td></td>
+    </tr>
+  </table>
 
   <script>
     const box = document.getElementById('box')
@@ -79,7 +120,7 @@
     snake.style.left = box.clientWidth /2 /*- snake.clientWidth / 2 */ + 'px'
     snake.style.top = box.clientHeight /2 - snake.clientHeight + 'px'
 
-    let speed = 100 //amount of ms between movements
+    let speed = 150 //amount of ms between movements
     let direction = 'right'
     let rendered = true
     let previousDirection = direction
@@ -186,8 +227,6 @@
       dot.style.top = Y*snake.clientHeight + 'px'
     }
 
-
-
     function randomInteger(min, max) {
       let rand = min + Math.random() * (max + 1 - min);
       return Math.floor(rand);
@@ -204,7 +243,17 @@
           direction = 'right'
           break
         }
+        case 'KeyD': {
+          if (pastDirection === 'left') {break}
+          direction = 'right'
+          break
+        }
         case 'ArrowLeft': {
+          if (pastDirection === 'right') {break}
+          direction = 'left'
+          break
+        }
+        case 'KeyA': {
           if (pastDirection === 'right') {break}
           direction = 'left'
           break
@@ -214,7 +263,17 @@
           direction = 'up'
           break
         }
+        case 'KeyW': {
+          if (pastDirection === 'down') {break}
+          direction = 'up'
+          break
+        }
         case 'ArrowDown': {
+          if (pastDirection === 'up') {break}
+          direction = 'down'
+          break
+        }
+        case 'KeyS': {
           if (pastDirection === 'up') {break}
           direction = 'down'
           break
@@ -223,6 +282,41 @@
 
       rendered = false
     })
+
+    const arrows = document.getElementsByClassName('arrow');
+
+    Array.from(arrows).forEach((el) => {
+      el.addEventListener('click', (e) => {
+        if (!rendered) {return}
+
+        let pastDirection = direction
+
+        switch (el.innerHTML) {
+          case '►': {
+            if (pastDirection === 'left') {break}
+            direction = 'right'
+            break
+          }
+          case '◄': {
+            if (pastDirection === 'right') {break}
+            direction = 'left'
+            break
+          }
+          case '▲': {
+            if (pastDirection === 'down') {break}
+            direction = 'up'
+            break
+          }
+          case '▼': {
+            if (pastDirection === 'up') {break}
+            direction = 'down'
+            break
+          }
+        }
+
+        rendered = false
+      })
+    });
 
     restartButton.onclick = () => {
       clearInterval(timerId)
